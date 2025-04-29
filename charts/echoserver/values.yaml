@@ -20,7 +20,7 @@ image:
   repository: 395364994606.dkr.ecr.eu-west-1.amazonaws.com/echoserver
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "e1bdc7d"
+  tag: "169d455"
 ## Specify security settings for the created Pods. To set the security settings for the echoserver Container use
 ## the corresponding "securityContext" field.
 ## See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
