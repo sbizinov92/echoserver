@@ -7,7 +7,7 @@ imagePullSecrets: []
 image:
   repository: 395364994606.dkr.ecr.eu-west-1.amazonaws.com/echoserver
   pullPolicy: IfNotPresent
-  tag: "sha-ee4c04b"
+  tag: "sha-3cc030a"
 podSecurityContext: {}
 # Example:
 # fsGroup: 2000
@@ -32,7 +32,6 @@ resources: {}
 
 nodeSelector:
   role: application
-  
 tolerations: []
 affinity: {}
 topologySpreadConstraints: []
