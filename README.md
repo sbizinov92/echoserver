@@ -1,53 +1,105 @@
-# echoserver
+# ⚙️ GitHub Actions Workflows: CI/CD + GitOps for EKS
 
-Simple `echoserver`, which dumps HTTP requests.
+This repository uses GitHub Actions to automate the entire CI/CD process, from testing and building a Go application, to publishing a Docker image to Amazon ECR, and finally updating a GitOps repository for Kubernetes deployment.
 
-- `/`: Dump the HTTP request.
-- `/health`: Returns a 200 status code.
-- `/panic`: Panics within the http handler and returns a status code 500.
-- `/status`: Returns a random status code, when the `status` parameter is empty
-  or `random`. Return the status code specified in the `status` parameter, e.g.
-  `?status=200`.
-- `/timeout`: Wait the given amount of time (`?timeout=1m`) before returning a
-  200 status code.
-- `/headersize`: Returns a 200 status code with a header `X-Header-Size` of the
-  size defined via `?size=1024`.
-- `/request`: Returns the response of the requested server. The request body
-  should have the following structure:
-  `{"method": "POST", "url": "http://localhost:8080/", "body": "test", "headers": {"x-test": "test"}}`
-- `/metrics`: Returns the captured Prometheus metrics.
+## ⚠️ Disclaimer
 
-## Building and Running
+> ⚠️ This setup is simplified and intentionally includes some non-production best practices:
+>
+> - The GitOps repository is self-updated directly from within the workflow using a commit push. While functional, this approach is **not ideal for long-term production environments** due to potential risks of automation loops, commit race conditions, or credential misuse. Tools like [Flux](https://fluxcd.io) with automated image update controllers, or external CD pipelines, are more robust for this use case.
+>
+> - Vulnerability scanning with Trivy is included, but the scanner configuration is **minimal** and may not cover all desired policies or CVE severities. Additional tuning and integration with policy engines like OPA or AWS Inspector may be necessary.
 
-To build and run the `echoserver` the following commands can be used:
+---
 
-```sh
-make build
-./bin/echoserver
-```
+## 🔧 Workflows Overview
 
-Via Docker the following commands can be used to build the image and run the
-`echoserver`:
+### 1. **Continuous Integration**
+- **Triggers:** On `push` or `pull_request` to the `main` branch.
+- **Steps:**
+  - Linting Go code with `golangci-lint`
+  - Running unit tests via `make test`
+  - Building the application binary with `make build`
 
-```sh
-docker build -f ./cmd/echoserver/Dockerfile -t ghcr.io/ricoberger/echoserver:latest .
-docker run -it --rm --name echoserver -p 8080:8080 ghcr.io/ricoberger/echoserver:latest
-```
+---
 
-The `echoserver` can also be deployed on Kubernetes via Helm:
+### 2. **Continuous Delivery – Docker Image**
+- **Triggers:**
+  - On successful completion of CI
+  - On push of a tag like `v*`
+  - Manual trigger (`workflow_dispatch`)
+- **Steps:**
+  - Builds and pushes a Docker image to AWS ECR using Buildx
+  - Generates dynamic image tags (`semver`, `sha`, `branch`)
+  - Scans the image for vulnerabilities using **Trivy**
+  - Uploads scan results to GitHub’s Security tab
 
-```sh
-helm upgrade --install echoserver oci://ghcr.io/ricoberger/charts/echoserver --version <VERSION>
-```
+---
 
-## Examples
+### 3. **GitOps Repository Update**
+- **Triggers:** On successful completion of Docker delivery workflow or manual trigger
+- **Steps:**
+  - Updates the `charts/echoserver/values.yaml` file
+    - Sets the image tag (`sha-<short-sha>` or custom)
+    - Sets the image repository to your ECR
+  - Commits and pushes the updated `values.yaml` to the GitOps repo
 
-```sh
-curl -vvv "http://localhost:8080/"
-curl -vvv "http://localhost:8080/panic"
-curl -vvv "http://localhost:8080/status"
-curl -vvv "http://localhost:8080/status?status=400"
-curl -vvv "http://localhost:8080/timeout?timeout=10s"
-curl -vvv "http://localhost:8080/headersize?size=100"
-curl -vvv -X POST -d '{"method": "POST", "url": "http://localhost:8080/", "body": "test", "headers": {"x-test": "test"}}' http://localhost:8080/request
-```
+---
+
+## 📦 Required Environment Variables
+
+Define these in your GitHub repository under **Settings → Variables**:
+
+| Name              | Description                         |
+|-------------------|-------------------------------------|
+| `AWS_REGION`      | AWS region for ECR (e.g. `eu-west-1`) |
+| `AWS_ACCOUNT_ID`  | Your AWS account ID                 |
+| `ECR_REPOSITORY`  | Name of the target ECR repo         |
+
+---
+
+## 🔐 Required Secrets
+
+Define these in **Settings → Secrets and variables → Actions → Secrets**:
+
+| Name                   | Description            |
+|------------------------|------------------------|
+| `AWS_ACCESS_KEY_ID`    | IAM user access key    |
+| `AWS_SECRET_ACCESS_KEY`| IAM user secret key    |
+
+---
+
+## 🚀 How It Works
+
+1. Push code to `main` → triggers **CI**
+2. CI passes → triggers **Docker Build & Push**
+3. Docker workflow completes → triggers **GitOps Update**
+4. Your ArgoCD (or Flux) deployment syncs updated values
+
+---
+
+## 💡 Notes
+
+- Image scanning is handled by [Trivy](https://github.com/aquasecurity/trivy)
+- Image metadata is managed using [docker/metadata-action](https://github.com/docker/metadata-action)
+- Kubernetes deployments assume use of a Helm chart (`charts/echoserver/values.yaml`)
+
+---
+
+## ✅ Example Use Cases
+
+- CI with static analysis and unit tests
+- Automatic Docker publishing on PR merge
+- GitOps-friendly updates to Kubernetes YAMLs
+
+---
+
+## 🛠 Dependencies
+
+Ensure the following are in your project:
+- `go.mod` and `go.sum` for Go project
+- `Dockerfile` in `./cmd/echoserver`
+- Helm chart with editable `values.yaml`
+
+---
+
