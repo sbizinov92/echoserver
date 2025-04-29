@@ -20,7 +20,7 @@ imagePullSecrets: []
 ## Set the image which should be used for echoserver.
 ##
 image:
-  repository: ghcr.io/ricoberger/echoserver
+  repository: 395364994606.dkr.ecr.eu-west-1.amazonaws.com/echoserver
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""

@@ -1,85 +1,63 @@
 ---
-name: Continuous Delivery
-
-on:
-  push:
-    branches:
-      - main
-    tags:
-      - v*
-
-jobs:
-  docker:
-    name: Docker
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Docker Metadata
-        id: metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/${{ github.repository }}
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{raw}}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Push Docker Image
-        id: docker_build
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          context: .
-          file: ./cmd/echoserver/Dockerfile
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64/v8
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
-
-  helm:
-    name: Helm
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set Version
-        id: version
-        run: |
-          echo VERSION=$(yq -r .version ./charts/echoserver/Chart.yaml) >> $GITHUB_ENV
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
-
-      - name: Package and Push Helm Chart
-        run: |
-          helm package ./charts/echoserver --version ${{ env.VERSION }}
-          helm push ./echoserver-${{ env.VERSION }}.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
+  name: Continuous Delivery - Docker Image
+  
+  on:
+    push:
+      branches:
+        - main
+      tags:
+        - v*
+  
+  env:
+    AWS_REGION: ${{ vars.AWS_REGION }}
+    ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+    AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+  
+  jobs:
+    docker:
+      name: Docker
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+  
+        - name: Docker Metadata
+          id: metadata
+          uses: docker/metadata-action@v5
+          with:
+            images: |
+              ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}
+            tags: |
+              type=ref,event=branch
+              type=semver,pattern={{raw}}
+              type=sha
+  
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ env.AWS_REGION }}
+  
+        - name: Login to Amazon ECR
+          id: login-ecr
+          uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+  
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v3
+  
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+  
+        - name: Build and Push Docker Image
+          id: docker_build
+          uses: docker/build-push-action@v6
+          with:
+            push: true
+            context: .
+            file: ./cmd/echoserver/Dockerfile
+            platforms: linux/amd64,linux/arm64
+            tags: ${{ steps.metadata.outputs.tags }}
+            labels: ${{ steps.metadata.outputs.labels }}
