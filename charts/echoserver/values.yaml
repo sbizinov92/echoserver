@@ -105,11 +105,11 @@ podLabels: {}
 ## See: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
 ##
 service:
-  type: ClusterIP
+  type: NodePort
+  port: 80
+  targetPort: 8080
   annotations: {}
   labels: {}
-serviceAccount:
-  name: ""
 ## Create a Service Monitor for the Prometheus Operator.
 ## See: https://github.com/coreos/prometheus-operator
 ##
@@ -127,17 +127,14 @@ serviceMonitor:
 ## See: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ##
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-  # kubernetes.io/ingress.class: nginx
-  # kubernetes.io/tls-acme: "true"
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/subnets: subnet-00e7e732c9b48a84f,subnet-00efaa0cda7a100e2
   hosts:
-    - host: echoserver.local
+    - host: ""
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Exact
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
