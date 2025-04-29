@@ -37,7 +37,7 @@ spec:
               service:
                 name: {{ include "echoserver.fullname" $ }}
                 port:
-                  number: {{ $.Values.service.port }}
+                  number: 80
           {{- end }}
     {{- end }}
 {{- end }}

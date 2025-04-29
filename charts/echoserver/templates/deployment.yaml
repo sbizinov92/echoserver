@@ -12,10 +12,10 @@ spec:
   template:
     metadata:
       annotations:
-        {{- include "echoserver.podAnnotations" . | nindent 8 }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
       labels:
         {{- include "echoserver.selectorLabels" . | nindent 8 }}
-        {{- include "echoserver.podLabels" . | nindent 8 }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -32,10 +32,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.env }}
-          env:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           ports:
             - name: http
               containerPort: 8080
