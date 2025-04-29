@@ -44,28 +44,6 @@ This repository uses GitHub Actions to automate the entire CI/CD process, from t
     - Sets the image repository to your ECR
   - Commits and pushes the updated `values.yaml` to the GitOps repo
 
----
-
-## 📦 Required Environment Variables
-
-Define these in your GitHub repository under **Settings → Variables**:
-
-| Name              | Description                         |
-|-------------------|-------------------------------------|
-| `AWS_REGION`      | AWS region for ECR (e.g. `eu-west-1`) |
-| `AWS_ACCOUNT_ID`  | Your AWS account ID                 |
-| `ECR_REPOSITORY`  | Name of the target ECR repo         |
-
----
-
-## 🔐 Required Secrets
-
-Define these in **Settings → Secrets and variables → Actions → Secrets**:
-
-| Name                   | Description            |
-|------------------------|------------------------|
-| `AWS_ACCESS_KEY_ID`    | IAM user access key    |
-| `AWS_SECRET_ACCESS_KEY`| IAM user secret key    |
 
 ---
 

@@ -73,7 +73,7 @@ ingress:
   className: alb
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/subnets: subnet-00e7e732c9b48a84f,subnet-00efaa0cda7a100e2
+    alb.ingress.kubernetes.io/subnets: subnet-0333e680cd8fd9ee5,subnet-08b966ba77558c5b9 # Hardcoded
   hosts:
     - host: ""
       paths:
