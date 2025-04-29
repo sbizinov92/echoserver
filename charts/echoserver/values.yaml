@@ -2,16 +2,12 @@
 
 nameOverride: ""
 fullnameOverride: ""
-
 replicaCount: 1
-
 imagePullSecrets: []
-
 image:
   repository: 395364994606.dkr.ecr.eu-west-1.amazonaws.com/echoserver
   pullPolicy: IfNotPresent
-  tag: "e1bdc7d"
-
+  tag: "d42b360"
 podSecurityContext: {}
 # Example:
 # fsGroup: 2000
@@ -35,11 +31,8 @@ resources: {}
 #   memory: 128Mi
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
-
 topologySpreadConstraints: []
 # Example:
 # - maxSkew: 1
@@ -50,28 +43,22 @@ topologySpreadConstraints: []
 #       app.kubernetes.io/name=hub
 
 volumes: []
-
 volumeMounts: []
-
 env: []
 # Example:
 # - name: MY_ENV_VAR
 #   value: my_value
 
 podAnnotations: {}
-
 podLabels: {}
-
 service:
   type: NodePort
   port: 80
   targetPort: 8080
   annotations: {}
   labels: {}
-
 serviceAccount:
-  name: "" 
-
+  name: ""
 serviceMonitor:
   enabled: false
   additionalMetricsRelabels: {}
@@ -80,7 +67,6 @@ serviceMonitor:
   path: /metrics
   interval: 30s
   scrapeTimeout: 30s
-
 ingress:
   enabled: true
   className: alb
@@ -88,7 +74,7 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/subnets: subnet-00e7e732c9b48a84f,subnet-00efaa0cda7a100e2
   hosts:
-    - host: ""  
+    - host: ""
       paths:
         - path: /
           pathType: Exact
