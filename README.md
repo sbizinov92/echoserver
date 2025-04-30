@@ -6,7 +6,7 @@ This repository uses GitHub Actions to automate the entire CI/CD process, from t
 
 > ⚠️ This setup is simplified and intentionally includes some non-production best practices:
 >
-> - The GitOps repository is self-updated directly from within the workflow using a commit push. While functional, this approach is **not ideal for long-term production environments** due to potential risks of automation loops, commit race conditions, or credential misuse. Tools like [Flux](https://fluxcd.io) with automated image update controllers, or external CD pipelines, are more robust for this use case.
+> - The GitOps repository is self-updated directly from within the workflow using a commit push. While functional, this approach is **not ideal for long-term production environments** due to potential risks of security. That's been done just in purpose of test stand tag updates. In scope of this task it will consume much more time to setup semantic release and image updater tools.
 >
 > - Vulnerability scanning with Trivy is included, but the scanner configuration is **minimal** and may not cover all desired policies or CVE severities. Additional tuning and integration with policy engines like OPA or AWS Inspector may be necessary.
 
