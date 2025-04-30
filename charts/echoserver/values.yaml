@@ -7,7 +7,7 @@ imagePullSecrets: []
 image:
   repository: 395364994606.dkr.ecr.eu-west-1.amazonaws.com/echoserver
   pullPolicy: IfNotPresent
-  tag: "sha-0b7687d"
+  tag: "sha-e3795fa"
 podSecurityContext: {}
 # Example:
 # fsGroup: 2000
